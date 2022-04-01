@@ -76,6 +76,9 @@ for version in $VERSIONS; do
        $prefix/bin/initdb -D $datadir
    fi
 
+   # Download latest info for pgindent
+   wget https://buildfarm.postgresql.org/cgi-bin/typedefs.pl -O src/tools/pgindent/typedefs.list
+
    cd ..
 done
 }
