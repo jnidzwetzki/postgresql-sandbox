@@ -12,7 +12,7 @@
 
 set -e
 
-VERSIONS="REL_14_2 REL_13_6 REL_12_10 REL_11_15"
+VERSIONS="REL_14_2 REL_13_6 REL_12_10 REL_11_15 REL_14_STABLE REL_13_STABLE"
 POSTGRES_GIT="https://github.com/postgres/postgres.git"
 BASEDIR=$(dirname $(readlink -f $0))
 BUILD_OPTIONS="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug"
@@ -75,9 +75,6 @@ for version in $VERSIONS; do
        mkdir -p $datadir
        $prefix/bin/initdb -D $datadir
    fi
-
-   # Download latest info for pgindent
-   wget https://buildfarm.postgresql.org/cgi-bin/typedefs.pl -O src/tools/pgindent/typedefs.list
 
    cd ..
 done
