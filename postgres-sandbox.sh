@@ -16,6 +16,7 @@ VERSIONS="REL_14_2 REL_13_6 REL_12_10 REL_11_15 REL_14_STABLE REL_13_STABLE"
 POSTGRES_GIT="https://github.com/postgres/postgres.git"
 BASEDIR=$(dirname $(readlink -f $0))
 BUILD_OPTIONS="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug"
+CFLAGS="-ggdb -O0"
 MAKE_JOBS=8
 
 echo "Welcome to the Postgres sandbox for $BASEDIR"
@@ -60,7 +61,7 @@ for version in $VERSIONS; do
    prefix="$BASEDIR/bin/$version"
    echo "Prefix is: $prefix"
 
-   ./configure --prefix=$prefix --with-openssl $BUILD_OPTIONS 
+   ./configure --prefix=$prefix --with-openssl $BUILD_OPTIONS CFLAGS="$CFLAGS"
 
    make -j $MAKE_JOBS
    make -j $MAKE_JOBS -C src/test/isolation
