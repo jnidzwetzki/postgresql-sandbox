@@ -19,6 +19,8 @@ BUILD_OPTIONS="--with-openssl --with-readline --with-zlib --with-libxml --enable
 CFLAGS="-ggdb -O0"
 MAKE_JOBS=8
 
+cd $BASEDIR
+
 echo "Welcome to the Postgres sandbox for $BASEDIR"
 
 if [ ! -d src ]; then
@@ -121,8 +123,12 @@ postgres_start)
 postgres_stop)
 	postgres_stop $2
 ;;
+postgres_restart)
+	postgres_stop $2
+	postgres_start $2
+;;
 *)
-   echo "Usage: $0 {postgres_install | postgres_start | postgres_stop}"
+   echo "Usage: $0 {postgres_install | postgres_start | postgres_stop | postgres_restart}"
    ;;  
 esac
 
