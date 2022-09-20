@@ -12,7 +12,9 @@
 
 set -e
 
-VERSIONS="REL_14_2 REL_13_6 REL_12_0 REL_12_10 REL_11_15 REL_14_STABLE REL_13_STABLE"
+unset LC_CTYPE
+
+VERSIONS="REL_14_5 REL_14_2 REL_13_6 REL_12_0 REL_12_10 REL_11_15 REL_14_STABLE REL_13_STABLE"
 POSTGRES_GIT="https://github.com/postgres/postgres.git"
 BASEDIR=$(dirname $(readlink -f $0))
 BUILD_OPTIONS="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug"
@@ -45,6 +47,7 @@ fi
 
 cd postgres.git
 git fetch $POSTGRES_GIT
+git fetch --tags
 cd ..
 
 for version in $VERSIONS; do
