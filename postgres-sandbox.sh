@@ -14,12 +14,19 @@ set -e
 
 unset LC_CTYPE
 
-VERSIONS="REL_14_5 REL_14_2 REL_13_6 REL_12_0 REL_12_10 REL_11_15 REL_14_STABLE REL_13_STABLE"
+#VERSIONS="REL_14_5 REL_14_2 REL_13_6 REL_12_0 REL_12_10 REL_11_15 REL_14_STABLE REL_13_STABLE"
+
+VERSIONS="REL_14_5 REL_14_2 REL_13_6 REL_12_0 REL_12_10"
 POSTGRES_GIT="https://github.com/postgres/postgres.git"
 BASEDIR=$(dirname $(readlink -f $0))
-BUILD_OPTIONS="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug"
-CFLAGS="-ggdb -O0 -g3 -fno-omit-frame-pointer"
+
+BUILD_OPTIONS_DEBUG="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug"
+BUILD_OPTIONS_RELEASE="--with-openssl --with-readline --with-zlib --with-libxml"
+
 # -O0 can be replaced by -Og to preserve optimizations
+CFLAGS_DEBUG="-ggdb -O0 -g3 -fno-omit-frame-pointer"
+CFLAGS_RELEASE=""
+
 MAKE_JOBS=8
 
 cd $BASEDIR
@@ -51,39 +58,49 @@ git fetch --tags
 cd ..
 
 for version in $VERSIONS; do
-   echo "**************************"
-   echo "Building $version"
-   echo "**************************"
 
-   if [ -d $version ]; then
-      echo "Version $version already exists, skipping"
-      continue
-   fi
+   for build_type in DEBUG RELEASE; do
+      echo "**************************"
+      echo "Building $version $build_type"
+      echo "**************************"
 
-   git clone postgres.git $version 
-   cd $version
-   git checkout $version
+      dest_dir=${version}_${build_type}
+      if [ -d $dest_dir ]; then
+         echo "Version $version ($build_type) already exists, skipping"
+         continue
+      fi
 
-   prefix="$BASEDIR/bin/$version"
-   echo "Prefix is: $prefix"
+      git clone postgres.git $dest_dir
+      cd $dest_dir
+      git checkout $version
 
-   ./configure --prefix=$prefix $BUILD_OPTIONS CFLAGS="$CFLAGS"
+      prefix="$BASEDIR/bin/$dest_dir"
+      echo "Prefix is: $dest_dir"
 
-   make -j $MAKE_JOBS
-   make -j $MAKE_JOBS -C src/test/isolation
-   make -j $MAKE_JOBS -C contrib/postgres_fdw
+      if [ "$build_type" = "RELEASE" ]; then
+         echo "Using (Build: $BUILD_OPTIONS_RELEASE) (CFlags: $CFLAGS_RELEASE)"
+         ./configure --prefix=$prefix $BUILD_OPTIONS_RELEASE CFLAGS="$CFLAGS_RELEASE"
+      else
+         echo "Using (Build: $BUILD_OPTIONS_DEBUG) (CFlags: $CFLAGS_DEBUG)"
+         ./configure --prefix=$prefix $BUILD_OPTIONS_DEBUG CFLAGS="$CFLAGS_DEBUG"
+      fi
+
+      make -j $MAKE_JOBS
+      make -j $MAKE_JOBS -C src/test/isolation
+      make -j $MAKE_JOBS -C contrib/postgres_fdw
  
-   make install
-   make -C contrib/postgres_fdw install
+      make install
+      make -C contrib/postgres_fdw install
 
-   datadir=$BASEDIR/data/$version
-   if [ ! -d $datadir ]; then 
-       echo "Datadir $datadir for version $version does not exist, creating..."
-       mkdir -p $datadir
-       $prefix/bin/initdb -D $datadir
-   fi
+      datadir=$BASEDIR/data/$dest_dir
+      if [ ! -d $datadir ]; then 
+          echo "Datadir $datadir for version $dest_dir does not exist, creating..."
+          mkdir -p $datadir
+          $prefix/bin/initdb -D $datadir
+      fi
 
-   cd ..
+      cd ..
+   done
 done
 }
 
