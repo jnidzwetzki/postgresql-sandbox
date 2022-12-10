@@ -16,16 +16,25 @@ unset LC_CTYPE
 
 #VERSIONS="REL_14_5 REL_14_2 REL_13_6 REL_12_0 REL_12_10 REL_11_15 REL_14_STABLE REL_13_STABLE"
 
-VERSIONS="REL_15_1 REL_14_5 REL_14_2 REL_13_6 REL_12_0 REL_12_10"
+#VERSIONS="REL_15_1 REL_14_5 REL_14_2 REL_13_6 REL_12_0 REL_12_10"
+VERSIONS="REL_12_10 REL_14_2 REL_15_1"
+
 POSTGRES_GIT="https://github.com/postgres/postgres.git"
 BASEDIR=$(dirname $(readlink -f $0))
 
-BUILD_OPTIONS_DEBUG="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug"
+BUILD_OPTIONS_SANITIZE="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug --enable-dtrace "
+BUILD_OPTIONS_DEBUG="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug --enable-dtrace"
 BUILD_OPTIONS_RELEASE="--with-openssl --with-readline --with-zlib --with-libxml"
 
 # -O0 can be replaced by -Og to preserve optimizations
+CFLAGS_SANITIZE="-g -fsanitize=address,undefined -fno-omit-frame-pointer -O1 -fno-inline"
 CFLAGS_DEBUG="-ggdb -O0 -g3 -fno-omit-frame-pointer"
 CFLAGS_RELEASE=""
+
+# Ldflags
+LDFLAGS_SANITIZE="-fsanitize=address,undefined -static-libasan -static-liblsan -static-libubsan"
+LDFLAGS_DEBUG=""
+LDFLAGS_RELEASE=""
 
 MAKE_JOBS=8
 
@@ -59,7 +68,7 @@ cd ..
 
 for version in $VERSIONS; do
 
-   for build_type in DEBUG RELEASE; do
+   for build_type in DEBUG RELEASE SANITIZE; do
       echo "**************************"
       echo "Building $version $build_type"
       echo "**************************"
@@ -78,12 +87,21 @@ for version in $VERSIONS; do
       echo "Prefix is: $dest_dir"
 
       if [ "$build_type" = "RELEASE" ]; then
-         echo "Using (Build: $BUILD_OPTIONS_RELEASE) (CFlags: $CFLAGS_RELEASE)"
-         ./configure --prefix=$prefix $BUILD_OPTIONS_RELEASE CFLAGS="$CFLAGS_RELEASE"
+         export BUILD_OPTIONS=$BUILD_OPTIONS_RELEASE
+         export CFLAGS=$CFLAGS_RELEASE
+         export LDFLAGS=$LDFLAGS_RELEASE
+      elif [ "$build_type" = "SANITIZE" ]; then
+         export BUILD_OPTIONS=$BUILD_OPTIONS_SANITIZE
+         export CFLAGS=$CFLAGS_SANITIZE
+         export LDFLAGS=$LDFLAGS_SANITIZE
       else
-         echo "Using (Build: $BUILD_OPTIONS_DEBUG) (CFlags: $CFLAGS_DEBUG)"
-         ./configure --prefix=$prefix $BUILD_OPTIONS_DEBUG CFLAGS="$CFLAGS_DEBUG"
+         export BUILD_OPTIONS=$BUILD_OPTIONS_DEBUG
+         export CFLAGS=$CFLAGS_DEBUG
+         export LDFLAGS=$LDFLAGS_DEBUG
       fi
+      
+      echo "Using (Build: $BUILD_OPTIONS) (CFlags: $CFLAGS) (LDFlags $LDFLAGS)"
+      ./configure --prefix=$prefix $BUILD_OPTIONS CFLAGS="$CFLAGS"
 
       make -j $MAKE_JOBS
       make -j $MAKE_JOBS -C src/test/isolation
