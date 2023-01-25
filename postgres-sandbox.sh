@@ -114,7 +114,9 @@ for version in $VERSIONS; do
       if [ ! -d $datadir ]; then 
           echo "Datadir $datadir for version $dest_dir does not exist, creating..."
           mkdir -p $datadir
-          $prefix/bin/initdb -D $datadir
+
+          # Initdb could fail in sanitizer builds. '|| true' ignores these failures
+          $prefix/bin/initdb -D $datadir || true
       fi
 
       cd ..
