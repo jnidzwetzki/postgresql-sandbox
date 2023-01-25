@@ -26,9 +26,9 @@ BUILD_OPTIONS_SANITIZE="--with-openssl --with-readline --with-zlib --with-libxml
 BUILD_OPTIONS_DEBUG="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug --enable-dtrace"
 BUILD_OPTIONS_RELEASE="--with-openssl --with-readline --with-zlib --with-libxml"
 
-# -O0 can be replaced by -Og to preserve optimizations
+# CFlags
 CFLAGS_SANITIZE="-g -fsanitize=address,undefined -fno-omit-frame-pointer -O1 -fno-inline"
-CFLAGS_DEBUG="-ggdb -O0 -g3 -fno-omit-frame-pointer"
+CFLAGS_DEBUG="-ggdb -Og -g3 -fno-omit-frame-pointer"
 CFLAGS_RELEASE=""
 
 # Ldflags
