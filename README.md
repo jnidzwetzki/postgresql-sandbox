@@ -1,4 +1,4 @@
-# PostgreSQL Sandbox
+# PostgreSQL Sandbox Installer
 
 This project provides a sandbox installer for PostgreSQL. It can be used to download, compile, and install multiple PostgreSQL versions in parallel on a single system. All PostgreSQL installations are compiled with different configurations (`RELEASE`, `DEBUG`, and `SANITIZER`). The `RELEASE` build is an optimized PostgreSQL like the build that is provided by Linux Distributions, `DEBUG` is an unoptimized build that contains debug symbols. `SANITIZER` is a build that is compiled and statically linked against an address sanitizer (libasan) and a leak analyzer (liblsan).
 
