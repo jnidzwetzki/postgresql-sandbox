@@ -17,7 +17,7 @@ unset LC_CTYPE
 #VERSIONS="REL_14_5 REL_14_2 REL_13_6 REL_12_0 REL_12_10 REL_11_15 REL_14_STABLE REL_13_STABLE"
 
 #VERSIONS="REL_15_1 REL_14_5 REL_14_2 REL_13_6 REL_12_0 REL_12_10"
-VERSIONS="REL_12_10 REL_14_2 REL_15_1"
+VERSIONS="REL_12_10 REL_13_11 REL_14_2 REL_15_1"
 
 POSTGRES_GIT="https://github.com/postgres/postgres.git"
 BASEDIR=$(dirname $(readlink -f $0))
@@ -141,6 +141,8 @@ postgres_start() {
 
 ###
 # Stop postgres with the given version
+# Parameter 1 - Version
+# Parameter 2 - Allow fail (optional)
 ###
 postgres_stop() {
    if [ -z "$1" ]; then
@@ -150,8 +152,14 @@ postgres_stop() {
 
    version=$1
 
+   # Allow stop fail
+   fail="/bin/false"
+   if [ -n "$2" ]; then
+      fail="/bin/true"
+   fi
+
    echo "Starting PostgreSQL version $version"
-   $BASEDIR/bin/$version/bin/pg_ctl -D $BASEDIR/data/$version -l $BASEDIR/logfile_$version stop
+   $BASEDIR/bin/$version/bin/pg_ctl -D $BASEDIR/data/$version -l $BASEDIR/logfile_$version stop || $fail
 }
 
 case "$1" in
@@ -165,7 +173,7 @@ postgres_stop)
 	postgres_stop $2
 ;;
 postgres_restart)
-	postgres_stop $2
+	postgres_stop $2 true
 	postgres_start $2
 ;;
 *)
