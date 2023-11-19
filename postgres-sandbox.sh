@@ -17,24 +17,24 @@ unset LC_CTYPE
 #VERSIONS="REL_14_5 REL_14_2 REL_13_6 REL_12_0 REL_12_10 REL_11_15 REL_14_STABLE REL_13_STABLE"
 
 #VERSIONS="REL_15_1 REL_14_5 REL_14_2 REL_13_6 REL_12_0 REL_12_10"
-VERSIONS="REL_12_10 REL_13_11 REL_14_2 REL_15_1"
+VERSIONS="REL_15_1" # REL_14_2 REL_14_9 REL_15_1"
 
 POSTGRES_GIT="https://github.com/postgres/postgres.git"
 BASEDIR=$(dirname $(readlink -f $0))
 
 BUILD_OPTIONS_SANITIZE="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug --enable-dtrace "
-BUILD_OPTIONS_DEBUG="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug --enable-dtrace"
-BUILD_OPTIONS_RELEASE="--with-openssl --with-readline --with-zlib --with-libxml"
+BUILD_OPTIONS_DEBUG="--with-openssl --with-readline --with-zlib --with-libxml --enable-cassert --enable-debug --enable-dtrace --with-llvm"
+BUILD_OPTIONS_RELEASE="--with-openssl --with-readline --with-zlib --with-libxml --with-llvm"
 
 # CFlags
 CFLAGS_SANITIZE="-g -fsanitize=address,undefined -fno-omit-frame-pointer -O1 -fno-inline"
-CFLAGS_DEBUG="-ggdb -Og -g3 -fno-omit-frame-pointer"
-CFLAGS_RELEASE=""
+CFLAGS_DEBUG="-ggdb -O0 -g3 -fno-omit-frame-pointer"
+CFLAGS_RELEASE="-g -O2 -fstack-protector-strong -Wformat -Werror=format-security -fno-omit-frame-pointer" # Debian values
 
-# Ldflags
+# LDflags
 LDFLAGS_SANITIZE="-fsanitize=address,undefined -static-libasan -static-liblsan -static-libubsan"
 LDFLAGS_DEBUG=""
-LDFLAGS_RELEASE=""
+LDFLAGS_RELEASE="-Wl,-z,relro -Wl,-z,now" # Debian values
 
 MAKE_JOBS=8
 
