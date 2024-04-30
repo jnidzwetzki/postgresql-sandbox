@@ -25,7 +25,7 @@ Adjust the `VERSIONS` setting inside of the script. This contains the PostgreSQL
 Afterward, the PostgreSQL installations can be downloaded and installed by executing:
 
 ```
-./postgres-sandbox.sh postgres-sandbox.sh
+./postgres-sandbox.sh postgres_install
 ```
 
 In addition, the `initdb` binary is invoked for each of the installations. 
